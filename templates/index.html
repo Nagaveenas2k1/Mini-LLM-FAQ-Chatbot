@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini LLM FAQ Chatbot</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding-left: 50px;
+      padding-right: 50px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      color: #1e3a8a;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .tips {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    ul {
+      text-align: left;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      width: 30%;
+      border: 2px solid #93c5fd;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input[type="text"]::placeholder {
+      color: #9ca3af;
+    }
+
+    button {
+      padding: 12px 25px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Mini LLM FAQ Chatbot</h1>
+  <p>Tip: Ask questions similar to those listed below, or topics you have added to the FAQ list.</p>
+
+  <h3>You Can Ask:</h3>
+<ul>
+  {% for question in faq_questions %}
+    <li>{{ question }}</li>
+  {% endfor %}
+</ul>
+
+  <input type="text" id="question" placeholder="e.g. How do I reset my password?" />
+  <button onclick="askQuestion()">Get Answer</button>
+  <p id="answer"></p>
+
+  <script>
+    function askQuestion() {
+      const question = document.getElementById('question').value.trim();
+      if (!question) {
+        alert("Please enter a question.");
+        return;
+      }
+      document.getElementById('answer').innerText = "Thinking...";
+
+      fetch('/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question: question})
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Server error: " + response.status);
+        }
+        return response.json();
+      }).then(data => {
+        if (data.answer) {
+          document.getElementById('answer').innerText = "Answer: " + data.answer;
+        } else if (data.error) {
+          document.getElementById('answer').innerText = "Error: " + data.error;
+        } else {
+          document.getElementById('answer').innerText = "No answer found.";
+        }
+      }).catch(err => {
+        document.getElementById('answer').innerText = "Error: " + err.message;
+      });
+    }
+  </script>
+</body>
+</html>
+
